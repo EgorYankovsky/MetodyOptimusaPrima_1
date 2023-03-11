@@ -1,13 +1,16 @@
-#import numpy as np
 import math
 
-K1 = (3 - math.sqrt(5)) / 2
-K2 = (math.sqrt(5) - 1) / 2
-K3 = (1 + math.sqrt(5)) / 2
+K1 = 0.3819660112501051
+K2 = 0.6180339887498949
+
+def FormBine(n) -> int:
+    return (int((0.5 * (1 + math.sqrt(5))) ** n / math.sqrt(5)) if n >= 40 else
+    int(((0.5 * (1 + math.sqrt(5))) ** n - (0.5 * (1 - math.sqrt(5))) ** n) / math.sqrt(5)))
 
 f = lambda x: (x - 7) ** 2
 
 def FindFib(value):
+    counter = 0
     a = 1
     b = 1
     c = a + b
@@ -16,7 +19,8 @@ def FindFib(value):
         a = b
         b = v
         c = b + a
-    return c, a
+        counter += 1
+    return counter
 
 def GoldenRatioMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
 
@@ -31,42 +35,27 @@ def GoldenRatioMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
     fx1.append(f(x1[0]))
     fx2.append(f(x2[0]))
     
-    # step 1
-    n += 1
-    if fx1[0] <= fx2[0]:
-        a.append(a[0])
-        b.append(x2[0])
-        x2.append(x1[0])
-        x1.append(a[-1] + b[-1] - x1[0])
-        fx2.append(fx1[-1])
-        fx1.append(f(x1[-1]))
-    else:
-        a.append(x1[0])
-        b.append(b[0])
-        x1.append(x2[0])
-        x2.append(a[-1] + b[-1] - x2[0])
-        fx1.append(fx2[0])
-        fx2.append(f(x2[-1]))
-    
-    while (True):
-        # step i
+    # step 1+
+    while True:
         n += 1
-        if (fx1[-1] <= fx2[-1]):
+        logi = True
+        if fx1[-1] <= fx2[-1]:
             a.append(a[-1])
             b.append(x2[-1])
             x2.append(x1[-1])
-            x1.append(a[-1] + b[-1] - x1[-1])
+            x1.append(a[-1] + K1 * (b[-1] - a[-1]))
             fx2.append(fx1[-1])
             fx1.append(f(x1[-1]))
         else:
             a.append(x1[-1])
             b.append(b[-1])
             x1.append(x2[-1])
-            x2.append(a[-1] + b[-1] - x2[-1])
+            x2.append(a[-1] + K2 * (b[-1] - a[-1]))
             fx1.append(fx2[-1])
             fx2.append(f(x2[-1]))
-        print (n, '{:.8e}'.format(fx2[-1]), '{:.8e}'.format(fx1[-1]), '{:.8e}'.format(b[-1]), '{:.8e}'.format(a[-1]), '{:.8e}'.format(b[-1] - a[-1]))
-        if (abs(b[-1] - a[-1]) <= eps):
+            logi = False
+        print (n, '{:.8e}'.format(fx2[-1]), '{:.8e}'.format(fx1[-1]), '{:.8e}'.format(b[-1]), '{:.8e}'.format(a[-1]), '{:.8e}'.format(b[-1] - a[-1]), logi)
+        if abs(b[-1] - a[-1]) <= eps:
             break
 
 def DichotomyMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
@@ -90,56 +79,38 @@ def DichotomyMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
 
 def FibonachiMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
     
-    fn2, fn0 = FindFib((b0 - a0) / eps)
-    a, b, x1, x2, xm, fx1, fx2 = [], [], [], [], [], [], []
+    a, b, x1, x2, fx1, fx2 = [], [], [], [], [], []
+    delt = b0 - a0
+    n2 = FindFib(delt / eps)
+    Fn2 = FormBine(n2)
     
-    # step 1
-    n = 1
+    # step 0
+    i = 0
     a.append(a0)
     b.append(b0)
-    x1.append(a[0] + (b[0] - a[0]) * fn0 / fn2)
+    x1.append(a[0] + (b[0] - a[0]) * FormBine(n2 - 2) / Fn2)
     x2.append(a[0] + b[0] - x1[0])
-    xm.append(0)
     fx1.append(f(x1[0]))
     fx2.append(f(x2[0]))
 
-    # step 2
-    n += 1
-    if fx1[0] <= fx2[0]:
-        a.append(a[-1])
-        b.append(x2[-1])
-        x2.append(x1[-1])
-        x1.append(a[-1] + b[-1] - x1[-1])
-        fx2.append(fx1[-1])
-        fx1.append(f(x1[-1]))
-    else:
-        a.append(x1[-1])
-        b.append(b[-1])
-        x1.append(x2[-1])
-        x2.append(a[-1] + b[-1] - x2[-1])
-        fx1.append(fx2[-1])
-        fx2.append(f(x2[-1]))
-
     # step i
     while True:
-        n += 1
+        i += 1
         if fx1[-1] <= fx2[-1]:
             a.append(a[-1])
             b.append(x2[-1])
             x2.append(x1[-1])
-            x1.append(a[-1] + b[-1] - x1[-1])
-            xm.append(x1[-1])
+            x1.append(a[-1] + delt * FormBine(n2 - i - 1) / Fn2)
             fx2.append(fx1[-1])
             fx1.append(f(x1[-1]))
         else:
             a.append(x1[-1])
             b.append(b[-1])
             x1.append(x2[-1])
-            x2.append(a[-1] + b[-1] - x2[-1])
-            xm.append(x2[-1])
+            x2.append(a[-1] + delt * FormBine(n2 - i) / Fn2)
             fx1.append(fx2[-1])
             fx2.append(f(x2[-1]))
-        print (n, '{:.8e}'.format(fx2[-1]), '{:.8e}'.format(fx1[-1]), '{:.8e}'.format(b[-1]), '{:.8e}'.format(a[-1]), '{:.8e}'.format(b[-1] - a[-1]))
+        print (i, '{:.8e}'.format(fx2[-1]), '{:.8e}'.format(fx1[-1]), '{:.8e}'.format(b[-1]), '{:.8e}'.format(a[-1]), '{:.8e}'.format(b[-1] - a[-1]))
         if abs(b[-1] - a[-1]) <= eps:
             break
 
@@ -174,11 +145,11 @@ def FindMinimum(a0 = -2.0, b0 = 20.0):
 
 
 
-#FindMinimum()
+FindMinimum()
 #DichotomyMethod()
 #GoldenRatioMethod()
 #print (GoldenRatioMethod(10 ** (-5)))
-FibonachiMethod()
+#FibonachiMethod()
 #arrEps = [10 ** (-i) for i in range(1, 8)]
 #for epsi in arrEps:
 #    print (math.log10(epsi), FibonachiMethod(epsi))
