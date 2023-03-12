@@ -81,8 +81,6 @@ def DichotomyMethod(eps = 1e-7, a0 = -2.0, b0 = 20.0):
         n += 1
     #print ("X_min = {:.7e}".format(0.5 * (x1[-1] + x2[-1])))
     #print ("Functions called:", fCount)
-    arr = []
-    arr.append()
     return fCount
 
 def FibonachiMethod(isReturn, eps = 1e-7, a0 = -2.0, b0 = 20.0):
